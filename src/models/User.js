@@ -3,18 +3,22 @@ const mongoose = require('mongoose');
 const UserSchema = new mongoose.Schema({
     username: {
         required: true,
-        type: String
+        type: String,
+        unique: true //para que el username sea único en la base de datos
     },
     password: {
         required: true,
         type: String
-        //guardar contraseña encriptada con bcrypt.hash()
-        
     },
 
     name: {
         required: false,
         type: String
+    },
+
+    profileImage: {
+        type: String,
+        default: ''
     },
     
     date : {
@@ -23,5 +27,14 @@ const UserSchema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('User', UserSchema)
+// consultas a la BD van aqui, no en el controlador.
+UserSchema.statics.findByUsername = function (username) {
+  return this.findOne({ username });
+};
+
+UserSchema.statics.createUser = function (data) {
+  return this.create(data);
+};
+
+module.exports = mongoose.model('User', UserSchema);
 
