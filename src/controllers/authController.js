@@ -34,6 +34,38 @@ const register = async (req, res) => {
   }
 };
 
-// POST /api/auth/login va aqui abajo - parte de karol
+//LOGIN
+const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-module.exports = { register, /* login */ };
+    if (!username || !password) {// Validar que se proporcionen username y password
+      return res.status(400);
+    }
+
+    // Buscar al usuario por username
+    const user = await User.findByUsername(username);
+    if (!user) {
+      return res.status(401);
+    }
+
+    // Comparar la contraseña
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401);
+    }
+
+    // Generar un token JWT
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    return res.json({ token }); // Devolver el token al cliente
+  } catch (error) { 
+    res.status(500);
+  }
+};
+
+module.exports = { register, login };

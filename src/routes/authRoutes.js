@@ -4,7 +4,7 @@ const authController = require('../controllers/authController');
 
 // POST /api/auth/register — Registrar un usuario nuevo
 router.post('/register', authController.register);
-
-//aqui va api de login, tambien requiere a authController- parte de karol
+// Iniciar sesión
+router.post('/login', authController.login);
 
 module.exports = router;
