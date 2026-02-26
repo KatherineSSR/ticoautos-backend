@@ -5,7 +5,8 @@ const User = require('../models/User');
 // POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { username, password, name, profileImage } = req.body;
+    const { username, password, name } = req.body;
+    const profileImage = req.file ? req.file.filename : ''; // Si se subió una imagen, guarda su nombre, sino deja vacío
 
     if (!username || !password) {
       return res.status(400).end();
