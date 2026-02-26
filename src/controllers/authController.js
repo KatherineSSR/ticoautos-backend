@@ -8,13 +8,13 @@ const register = async (req, res) => {
     const { username, password, name, profileImage } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: 'Username y password son requeridos' });
+      return res.status(400).end();
     }
 
     // Verificar que el username no exista, la funcion findByUsername esta en user.js
     const existingUser = await User.findByUsername(username);
     if (existingUser) {
-      return res.status(400).json({ message: 'El username ya está en uso' });
+      return res.status(400).end();
     }
 
     // Encriptar la contraseña
@@ -28,9 +28,9 @@ const register = async (req, res) => {
       profileImage: profileImage || ''
     });
 
-    res.status(201).json({ message: 'Usuario registrado exitosamente' });
+    res.status(201).end();
   } catch (error) {
-    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    res.status(500).end();
   }
 };
 
@@ -40,19 +40,19 @@ const login = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {// Validar que se proporcionen username y password
-      return res.status(400);
+      return res.status(400).end();
     }
 
     // Buscar al usuario por username
     const user = await User.findByUsername(username);
     if (!user) {
-      return res.status(401);
+      return res.status(401).end();
     }
 
     // Comparar la contraseña
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401);
+      return res.status(401).end();
     }
 
     // Generar un token JWT
@@ -64,7 +64,7 @@ const login = async (req, res) => {
 
     return res.json({ token }); // Devolver el token al cliente
   } catch (error) { 
-    res.status(500);
+    res.status(500).end();
   }
 };
 

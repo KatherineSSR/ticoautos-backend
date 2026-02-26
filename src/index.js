@@ -11,7 +11,7 @@ connectDB();
 const app = express();
 
 // Middlewares
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '10mb'}));//para que el backend pueda recibir imagenes en base64
 app.use(cors({
   origin: '*', //cambiar mas adelente por la url de nuestro frontend
   methods: '*'
