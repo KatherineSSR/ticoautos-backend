@@ -11,6 +11,7 @@ connectDB();
 const app = express();
 
 // Middlewares
+
 app.use(bodyParser.json());
 app.use(cors({
   origin: '*', //cambiar mas adelente por la url de nuestro frontend
@@ -23,6 +24,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); //expre
 
 // Rutas 
 app.use('/api/auth', require('./routes/authRoutes')); //registro y login
+app.use('/api/vehicles', require('./routes/vehicleRoutes'));
 
 // Levantar servidor
-app.listen(process.env.PORT, () => console.log(`Escuchando el puerto ${process.env.PORT}`))
+app.listen(process.env.PORT, () => console.log(`Escuchando el puerto ${process.env.PORT}`));
