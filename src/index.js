@@ -24,7 +24,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); //expre
 
 // Rutas 
 app.use('/api/auth', require('./routes/authRoutes')); //registro y login
-app.use('/api/vehicles', require('./routes/vehicleRoutes'));
-
+app.use('/api/vehicles', require('./routes/vehicleRoutes')); //rutas para crear, editar, eliminar y listar vehículos
+app.use('/api/questions', require('./routes/questionRoutes')); //rutas para crear preguntas y respuestas, y listar preguntas de un vehículo
 // Levantar servidor
 app.listen(process.env.PORT, () => console.log(`Escuchando el puerto ${process.env.PORT}`));
