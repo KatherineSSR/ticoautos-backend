@@ -2,44 +2,6 @@ const Question = require('../models/Question');
 const Answer = require('../models/Answer');
 const Vehicle = require('../models/Vehicle');
 
-const getQuestionsWithAnswers = async (filter) => {
-  const questions = await Question.find(filter)
-    .populate('user', 'username name')
-    .populate('vehicle', 'brand model year image status owner')
-    .sort({ date: 1 })
-    .lean();
-
-  const questionIds = questions.map((question) => question._id);
-
-  if (!questionIds.length) {
-    return [];
-  }
-
-  const answers = await Answer.find({ question: { $in: questionIds } })
-    .populate('user', 'username name')
-    .sort({ date: 1 })
-    .lean();
-
-  const answersByQuestion = new Map();
-
-  for (const answer of answers) {
-    const questionKey = String(answer.question);
-
-    if (!answersByQuestion.has(questionKey)) {
-      answersByQuestion.set(questionKey, []);
-    }
-
-    answersByQuestion.get(questionKey).push(answer);
-  }
-
-  return questions.map((question) => {
-    return {
-      ...question,
-      answers: answersByQuestion.get(String(question._id)) || [],
-    };
-  });
-};
-
 // Obtener las preguntas de un vehículo
 // GET /api/questions/vehicle/:vehicleId
 exports.getVehicleQuestions = async (req, res) => {
@@ -58,7 +20,7 @@ exports.getVehicleQuestions = async (req, res) => {
       ? { vehicle: vehicleId }
       : { vehicle: vehicleId, user: userId };
 
-    const result = await getQuestionsWithAnswers(filter);
+    const result = await Question.findWithAnswers(filter);
 
     // El frontend usa isOwner para decidir (vendedor o comprador)
     return res.json({ isOwner, questions: result });
@@ -84,7 +46,7 @@ exports.getOwnerInbox = async (req, res) => {
       return res.json({ questions: [] });
     }
   
-    const questions = await getQuestionsWithAnswers({ vehicle: { $in: vehicleIds } });
+    const questions = await Question.findWithAnswers({ vehicle: { $in: vehicleIds } });
     return res.json({ questions });
   } catch (error) {
     return res.status(500).json({ message: 'Error fetching inbox', error });
@@ -101,7 +63,7 @@ exports.getMyQuestions = async (req, res) => {
       return res.status(401).json({ message: 'Not authenticated' });
     }
   
-    const questions = await getQuestionsWithAnswers({ user: userId });
+    const questions = await Question.findWithAnswers({ user: userId });
     return res.json({ questions });
   } catch (error) {
     return res.status(500).json({ message: 'Error fetching your questions', error });
@@ -133,12 +95,10 @@ exports.createQuestion = async (req, res) => {
       return res.status(403).json({ message: "You cannot ask questions about your own vehicle." });
     }
 
-    const lastQuestion = await Question.findOne({ vehicle: vehicleId, user: userId })
-      .sort({ date: -1 })
-      .lean();
+    const lastQuestion = await Question.findLatestByVehicleAndUser(vehicleId, userId);
 
     if (lastQuestion) {
-      const hasAnswer = await Answer.exists({ question: lastQuestion._id });
+      const hasAnswer = await Answer.hasForQuestion(lastQuestion._id);
       if (!hasAnswer) {
         return res.status(409).json({
           message:
@@ -187,7 +147,7 @@ exports.createAnswer = async (req, res) => {
     }
 
     // Evitar múltiples respuestas  1 a 1
-    const existing = await Answer.findOne({ question: questionId });
+    const existing = await Answer.hasForQuestion(questionId);
     if (existing) {
       return res.status(409).json({ message: 'This question has already been answered.' });
     }
