@@ -96,7 +96,7 @@ const markAsSold = async (req, res) => {
 // Listar vehiculos con filtros y paginacion
 const listVehicles = async (req, res) => {
 	try {
-		const { brand, model, minYear, maxYear, minPrice, maxPrice, status, page = 1, limit = 10 } = req.query;
+		const { brand, model, minYear, maxYear, minPrice, maxPrice, status, page = 1, limit = 6} = req.query;
 
         //Filtros
 		const filter = {};
